@@ -19,7 +19,6 @@
         color: #fff;
       }
 
-      /* ── Home screen ───────────────────────────────────────────────── */
       #home {
         position: fixed;
         inset: 0;
@@ -34,7 +33,6 @@
       }
 
       #home.hidden {
-        /* Keep in DOM so SW/transport stay alive, just hide it */
         opacity: 0;
         pointer-events: none;
       }
@@ -98,7 +96,6 @@
         text-align: center;
       }
 
-      /* ── Browser iframe ────────────────────────────────────────────── */
       #browser {
         position: fixed;
         inset: 0;
@@ -110,11 +107,8 @@
         display: none;
       }
 
-      #browser.visible {
-        display: block;
-      }
+      #browser.visible { display: block; }
 
-      /* ── Home button (shown while browsing) ────────────────────────── */
       #home-btn {
         position: fixed;
         bottom: 1.2rem;
@@ -141,7 +135,6 @@
   </head>
   <body>
 
-    <!-- Permanent home shell — never navigates away -->
     <div id="home">
       <h1 class="title">Scramjet <span>STATIC</span></h1>
       <div class="bar-wrap">
@@ -164,32 +157,26 @@
       <p id="status">Initialising…</p>
     </div>
 
-    <!-- Browser iframe — Scramjet renders sites here -->
-    <!-- allow-same-origin needed so SW can intercept requests inside the iframe -->
     <iframe
       id="browser"
       sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
       allow="autoplay; fullscreen"
     ></iframe>
 
-    <!-- Floating home button shown while browsing -->
     <button id="home-btn">⌂ Home</button>
 
     <script type="module">
-      const status   = document.getElementById('status')
-      const home     = document.getElementById('home')
-      const frame    = document.getElementById('browser')
-      const homeBtn  = document.getElementById('home-btn')
-      const bar      = document.getElementById('searchbar')
-
-      // ── Helpers ──────────────────────────────────────────────────────
+      const status  = document.getElementById('status')
+      const home    = document.getElementById('home')
+      const frame   = document.getElementById('browser')
+      const homeBtn = document.getElementById('home-btn')
+      const bar     = document.getElementById('searchbar')
 
       function showHome() {
         home.classList.remove('hidden')
         frame.classList.remove('visible')
         homeBtn.classList.remove('visible')
         bar.value = ''
-        bar.focus()
       }
 
       function showBrowser(encodedUrl) {
@@ -210,13 +197,12 @@
 
       homeBtn.addEventListener('click', showHome)
 
-      // ── Init ─────────────────────────────────────────────────────────
-
       try {
         const BASE   = new URL('./', document.baseURI).pathname
         const WISP   = 'wss://anura.pro/wisp/'
         const PREFIX = BASE + 'scramjet/'
 
+        // Load scramjet engine
         await import('./scramjet-engine/scramjet.js')
         const { ScramjetController } = $scramjetLoadController()
 
@@ -229,28 +215,13 @@
           },
         })
 
-        // Register SW
-        const reg = await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
+        // Register SW — skipWaiting + clients.claim() in sw.js means it takes
+        // control immediately. We don't need to wait or reload.
+        await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
 
-        if (!navigator.serviceWorker.controller) {
-          // First install — wait for SW to activate then reload once so
-          // controller is non-null and loadConfig message lands correctly
-          await new Promise(resolve => {
-            if (reg.active && reg.active.state === 'activated') { resolve(); return }
-            const candidate = reg.installing || reg.waiting || reg.active
-            if (!candidate) { resolve(); return }
-            candidate.addEventListener('statechange', function h(e) {
-              if (e.target.state === 'activated') {
-                candidate.removeEventListener('statechange', h)
-                resolve()
-              }
-            })
-          })
-          window.location.reload()
-          return
-        }
-
-        // SW is active and controlling this page
+        // sj.init() writes config to IndexedDB. The SW reads it via loadConfig()
+        // on the first intercepted request. This works whether or not controller
+        // is set yet — IDB is the source of truth, not the message channel.
         await sj.init()
 
         // Set up libcurl transport
@@ -259,7 +230,6 @@
 
         status.textContent = 'Ready'
 
-        // ── Navigate ────────────────────────────────────────────────────
         function navigate(raw) {
           const url = toUrl(raw)
           if (!url) return
