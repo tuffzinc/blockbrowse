@@ -58,7 +58,11 @@
       const homeBtn = document.getElementById('home-btn')
       const bar     = document.getElementById('searchbar')
 
+      // Track whether we're currently browsing
+      let browsing = false
+
       function showHome() {
+        browsing = false
         home.classList.remove('hidden')
         frame.classList.remove('visible')
         homeBtn.classList.remove('visible')
@@ -70,7 +74,24 @@
         home.classList.add('hidden')
         frame.classList.add('visible')
         homeBtn.classList.add('visible')
+
+        if (!browsing) {
+          // First navigation into the browser — push a history entry so that
+          // pressing back returns here (to home) instead of leaving the site.
+          // We use state {home:true} to mark the home entry we'll detect below.
+          history.pushState({ browsing: true }, '')
+          browsing = true
+        }
       }
+
+      // When the browser back button is pressed and we pop back to the home state,
+      // show the home screen instead of leaving the site.
+      window.addEventListener('popstate', (e) => {
+        if (browsing) {
+          // User pressed back while browsing — go home
+          showHome()
+        }
+      })
 
       function toUrl(raw) {
         const s = raw.trim()
@@ -81,18 +102,20 @@
         return 'https://duckduckgo.com/?q=' + encodeURIComponent(s)
       }
 
-      homeBtn.addEventListener('click', showHome)
+      homeBtn.addEventListener('click', () => {
+        // Home button — go back in outer history so state stays consistent
+        if (browsing) history.back()
+        else showHome()
+      })
 
       try {
         const BASE   = new URL('./', document.baseURI).pathname
         const WISP   = 'wss://anura.pro/wisp/'
         const PREFIX = BASE + 'scramjet/'
 
-        // Step 1
         status.textContent = 'Loading engine…'
         await import('./scramjet-engine/scramjet.js')
 
-        // Step 2
         status.textContent = 'Starting controller…'
         const { ScramjetController } = $scramjetLoadController()
         const sj = new ScramjetController({
@@ -104,20 +127,16 @@
           },
         })
 
-        // Step 3
         status.textContent = 'Registering service worker…'
         await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
 
-        // Step 4
         status.textContent = 'Writing config…'
         await sj.init()
 
-        // Step 5
         status.textContent = 'Connecting transport…'
         const conn = new _0zzl94._ak44v7(BASE + 'bare-mux/bare-mux-worker.js')
         await conn.setTransport(BASE + 'transport/libcurl.mjs', [{ wisp: WISP }])
 
-        // Done
         status.textContent = 'Ready'
 
         function navigate(raw) {
