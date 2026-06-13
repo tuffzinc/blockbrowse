@@ -4,7 +4,7 @@
 **Created & Maintained by:** hahahah67-pixel
 
 ---
-align="center"><img src="https://raw.githubusercontent.com/MercuryWorkshop/scramjet/main/assets/scramjet.png" height="200"></p>
+align="center"><img src="https://raw.githubusercontent.com/hahahah67-pixel/scramjet-static-demo-build/main/transport/scramjett.png" height="200"></p>
 
 ## 🚀 About the Project
 
