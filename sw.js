@@ -1,6 +1,6 @@
 // Scramjet STATIC — Service Worker
 // Engine: Scramjet v1.1.0 (MercuryWorkshop)
-// Transport: libcurl over wss://wisp-wdnb.onrender.com/wisp/
+// Transport: libcurl over wss://anura.pro/wisp/
 
 importScripts('./scramjet-engine/scramjet-all.js')
 
