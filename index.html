@@ -110,8 +110,6 @@
         await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
 
         status.textContent = 'Writing config…'
-        // Delete stale IDB from previous broken SW versions before writing fresh config
-        await new Promise(r => { const d = indexedDB.deleteDatabase('$scramjet'); d.onsuccess = d.onerror = r })
         await sj.init()
 
         status.textContent = 'Connecting transport…'
