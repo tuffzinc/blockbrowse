@@ -42,8 +42,8 @@
 
     <iframe
       id="browser"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-pointer-lock allow-top-navigation-by-user-activation"
-      allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
+      allow="autoplay; fullscreen"
     ></iframe>
 
     <script type="module">
@@ -110,31 +110,11 @@
         await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
 
         status.textContent = 'Writing config…'
-        await new Promise(r => {
-          const d = indexedDB.deleteDatabase('$scramjet')
-          d.onsuccess = d.onerror = r
-        })
         await sj.init()
 
-        // setTransport can hang if the SharedWorker takes too long loading
-        // libcurl.mjs (2MB). Retry up to 3 times with a 12s timeout each.
         status.textContent = 'Connecting transport…'
         const conn = new _0zzl94._ak44v7(BASE + 'bare-mux/bare-mux-worker.js')
-        let connected = false
-        for (let i = 1; i <= 3; i++) {
-          try {
-            if (i > 1) status.textContent = `Connecting transport… (attempt ${i}/3)`
-            await Promise.race([
-              conn.setTransport(BASE + 'transport/libcurl.mjs', [{ wisp: WISP }]),
-              new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000))
-            ])
-            connected = true
-            break
-          } catch {
-            if (i < 3) await new Promise(r => setTimeout(r, 1500))
-          }
-        }
-        if (!connected) throw new Error('Transport failed to connect after 3 attempts. Try reloading.')
+        await conn.setTransport(BASE + 'transport/libcurl.mjs', [{ wisp: WISP }])
 
         history.replaceState({ home: true }, '')
         status.textContent = 'Ready'
