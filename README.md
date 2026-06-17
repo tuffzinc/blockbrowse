@@ -61,3 +61,5 @@ repo File structure
 ## ⭐ Support
 
 Thank you for supporting this project! If you decide to fork it, please consider leaving a **Star (⭐)**!
+
+TIP: the default scramjet-static program uses the public WISP aura.pro server link, it is highly suggested to experiment with other WISP backend URL's (including your own) to maxmize security, speed, and other config to your liking, the default aura.pro URL is used in the public build of scramjet-static and replacment is un-needed, although not a bad idea for public deployment.
