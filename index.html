@@ -52,6 +52,10 @@
       const frame   = document.getElementById('browser')
       const bar     = document.getElementById('searchbar')
 
+      // BUG 2+3 FIX: Clear iframe immediately on page load so no
+      // previously cached URL bleeds through into the new session
+      frame.src = 'about:blank'
+
       let browsing = false
 
       function showHome() {
@@ -92,18 +96,22 @@
         const WISP   = 'wss://anura.pro/wisp/'
         const PREFIX = BASE + 'scramjet/'
 
-        // Unregister any existing SW first so it cannot open IDB
-        // before sj.init() creates the object stores
-        status.textContent = 'Preparing…'
-        const regs = await navigator.serviceWorker.getRegistrations()
-        await Promise.all(regs.map(r => r.unregister()))
+        // BUG 1 FIX: Only do the nuclear SW unregister + IDB delete on
+        // first ever load when the SW is NOT yet controlling this page.
+        // On reload the SW is already controlling, IDB is already valid —
+        // doing cleanup would cause deleteDatabase to block because the SW
+        // holds the IDB open, causing the "Writing config" hang.
+        const isFirstLoad = !navigator.serviceWorker.controller
 
-        // Delete the $scramjet IDB so sj.init() creates it fresh with
-        // all required object stores. Now safe because SW is unregistered.
-        await new Promise(r => {
-          const req = indexedDB.deleteDatabase('$scramjet')
-          req.onsuccess = req.onerror = req.onblocked = r
-        })
+        if (isFirstLoad) {
+          status.textContent = 'Preparing…'
+          const regs = await navigator.serviceWorker.getRegistrations()
+          await Promise.all(regs.map(r => r.unregister()))
+          await new Promise(r => {
+            const req = indexedDB.deleteDatabase('$scramjet')
+            req.onsuccess = req.onerror = req.onblocked = r
+          })
+        }
 
         status.textContent = 'Loading engine…'
         await import('./scramjet-engine/scramjet.js')
@@ -119,15 +127,23 @@
           },
         })
 
-        // Register SW AFTER sj.init() writes config so SW cannot
-        // open IDB before stores are created
-        status.textContent = 'Writing config…'
-        await sj.init()
-
-        // NOW register SW - IDB is fully set up with all stores
-        status.textContent = 'Registering service worker…'
-        await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
-        await navigator.serviceWorker.ready
+        if (isFirstLoad) {
+          // First load: init BEFORE registering SW so IDB stores
+          // are created before the SW can try to open them
+          status.textContent = 'Writing config…'
+          await sj.init()
+          status.textContent = 'Registering service worker…'
+          await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
+          await navigator.serviceWorker.ready
+        } else {
+          // Reload: SW already active, IDB already valid
+          // Register (no-op if same SW) then init to refresh config
+          status.textContent = 'Registering service worker…'
+          await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
+          await navigator.serviceWorker.ready
+          status.textContent = 'Writing config…'
+          await sj.init()
+        }
 
         status.textContent = 'Connecting transport…'
         const conn = new _0zzl94._ak44v7(BASE + 'bare-mux/bare-mux-worker.js')
