@@ -1,180 +1,177 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BlockBrowse</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
-    <script src="./bare-mux/bare-mux.js"></script>
-    <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { height: 100%; overflow: hidden; background: #000; font-family: 'Roboto', sans-serif; color: #fff; }
-      #home { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 12vh; background: #000; z-index: 10; transition: opacity 0.18s ease; }
-      #home.hidden { opacity: 0; pointer-events: none; }
-      .title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; letter-spacing: 0.04em; white-space: nowrap; margin-bottom: 2.2rem; text-shadow: 0 0 40px rgba(255,255,255,0.18); }
-      .title span { font-weight: 500; }
-      .bar-wrap { width: min(600px, 88vw); position: relative; }
-      .bar-wrap input { width: 100%; padding: 0.85rem 3rem 0.85rem 1.25rem; border-radius: 999px; border: 1.5px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Roboto', sans-serif; font-size: 1rem; font-weight: 300; outline: none; transition: border-color 0.2s, background 0.2s; backdrop-filter: blur(6px); }
-      .bar-wrap input::placeholder { color: rgba(255,255,255,0.38); }
-      .bar-wrap input:focus { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1); }
-      .bar-wrap button { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0.25rem; display: flex; align-items: center; color: rgba(255,255,255,0.5); transition: color 0.2s; }
-      .bar-wrap button:hover { color: #fff; }
-      #status { margin-top: 1rem; font-size: 0.78rem; color: rgba(255,255,255,0.3); letter-spacing: 0.03em; min-height: 1.2em; text-align: center; }
-      #browser { position: fixed; inset: 0; width: 100%; height: 100%; border: none; background: #111; z-index: 5; display: none; }
-      #browser.visible { display: block; }
-    </style>
-  </head>
-  <body>
-    <div id="home">
-      <h1 class="title">BlockBrowse <span>BETA</span></h1>
-      <div class="bar-wrap">
-        <input id="searchbar" type="text" placeholder="Browse the web" autocomplete="off" autocorrect="off" spellcheck="false" />
-        <button id="go-btn" aria-label="Go">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </button>
-      </div>
-      <p id="status">Initialising…</p>
-    </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BlockBrowse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
+    <script src="./bare-mux/bare-mux.js"></script>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; overflow: hidden; background: #000; font-family: 'Roboto', sans-serif; color: #fff; }
+      #home { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 12vh; background: #000; z-index: 10; transition: opacity 0.18s ease; }
+      #home.hidden { opacity: 0; pointer-events: none; }
+      .title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; letter-spacing: 0.04em; white-space: nowrap; margin-bottom: 2.2rem; text-shadow: 0 0 40px rgba(255,255,255,0.18); }
+      .title span { font-weight: 500; }
+      .bar-wrap { width: min(600px, 88vw); position: relative; }
+      .bar-wrap input { width: 100%; padding: 0.85rem 3rem 0.85rem 1.25rem; border-radius: 999px; border: 1.5px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #fff; font-family: 'Roboto', sans-serif; font-size: 1rem; font-weight: 300; outline: none; transition: border-color 0.2s, background 0.2s; backdrop-filter: blur(6px); }
+      .bar-wrap input::placeholder { color: rgba(255,255,255,0.38); }
+      .bar-wrap input:focus { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1); }
+      .bar-wrap button { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0.25rem; display: flex; align-items: center; color: rgba(255,255,255,0.5); transition: color 0.2s; }
+      .bar-wrap button:hover { color: #fff; }
+      #status { margin-top: 1rem; font-size: 0.78rem; color: rgba(255,255,255,0.3); letter-spacing: 0.03em; min-height: 1.2em; text-align: center; }
+      #browser { position: fixed; inset: 0; width: 100%; height: 100%; border: none; background: #111; z-index: 5; display: none; }
+      #browser.visible { display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="home">
+      <h1 class="title">Scramjet <span>STATIC</span></h1>
+      <div class="bar-wrap">
+        <input id="searchbar" type="text" placeholder="Browse the web" autocomplete="off" autocorrect="off" spellcheck="false" />
+        <button id="go-btn" aria-label="Go">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+      <p id="status">Initialising…</p>
+    </div>
 
-    <iframe
-      id="browser"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
-      allow="autoplay; fullscreen"
-    ></iframe>
+    <iframe
+      id="browser"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
+      allow="autoplay; fullscreen"
+    ></iframe>
 
-    <script type="module">
-      const status  = document.getElementById('status')
-      const home    = document.getElementById('home')
-      const frame   = document.getElementById('browser')
-      const bar     = document.getElementById('searchbar')
+    <script type="module">
+      const status  = document.getElementById('status')
+      const home    = document.getElementById('home')
+      const frame   = document.getElementById('browser')
+      const bar     = document.getElementById('searchbar')
 
-      let browsing = false
+      let browsing = false
 
-      function showHome() {
-        browsing = false
-        home.classList.remove('hidden')
-        frame.classList.remove('visible')
-        bar.value = ''
-      }
+      function showHome() {
+        browsing = false
+        home.classList.remove('hidden')
+        frame.classList.remove('visible')
+        bar.value = ''
+      }
 
-      function showBrowser(encodedUrl) {
-        // Use replace() so about:blank is NOT added to iframe history
-        // This prevents the black blank-page flash when pressing back
-        if (!browsing) {
-          // First navigation: use replace so no blank entry in iframe history
-          frame.contentWindow.location.replace(encodedUrl)
-        } else {
-          frame.src = encodedUrl
-        }
-        home.classList.add('hidden')
-        frame.classList.add('visible')
-        if (!browsing) {
-          // Push ONE sentinel entry so back button works
-          history.pushState({ browsing: true }, '')
-          browsing = true
-        }
-      }
+      function showBrowser(encodedUrl) {
+        // Use replace() so about:blank is NOT added to iframe history
+        // This prevents the black blank-page flash when pressing back
+        if (!browsing) {
+          // First navigation: use replace so no blank entry in iframe history
+          frame.contentWindow.location.replace(encodedUrl)
+        } else {
+          frame.src = encodedUrl
+        }
+        home.classList.add('hidden')
+        frame.classList.add('visible')
+        if (!browsing) {
+          // Push ONE sentinel entry so back button works
+          history.pushState({ browsing: true }, '')
+          browsing = true
+        }
+      }
 
-      // hashchange is fired when location.hash changes — completely separate
-      // from iframe joint history, so Chrome never confuses them
-      window.addEventListener('hashchange', () => {
-        if (location.hash === '' || location.hash === '#') {
-          if (browsing) showHome()
-        }
-      })
+      // hashchange is fired when location.hash changes — completely separate
+      // from iframe joint history, so Chrome never confuses them
+      window.addEventListener('hashchange', () => {
+        if (location.hash === '' || location.hash === '#') {
+          if (browsing) showHome()
+        }
+      })
 
-      // popstate catches back button when hash approach alone isn't enough
-      window.addEventListener('popstate', (e) => {
-        if (e.state && e.state.browsing) {
-          showHome()
-          history.replaceState({ home: true }, '')
-        }
-      })
+      // popstate catches back button when hash approach alone isn't enough
+      window.addEventListener('popstate', (e) => {
+        if (e.state && e.state.browsing) {
+          showHome()
+          history.replaceState({ home: true }, '')
+        }
+      })
 
-      function toUrl(raw) {
-        const s = raw.trim()
-        if (!s) return null
-        if (/^https?:\/\//i.test(s)) return s
-        if (/^\/\//.test(s)) return 'https:' + s
-        if (/^[^\s]+\.[^\s]+$/.test(s)) return 'https://' + s
-        return 'https://duckduckgo.com/?q=' + encodeURIComponent(s)
-      }
+      function toUrl(raw) {
+        const s = raw.trim()
+        if (!s) return null
+        if (/^https?:\/\//i.test(s)) return s
+        if (/^\/\//.test(s)) return 'https:' + s
+        if (/^[^\s]+\.[^\s]+$/.test(s)) return 'https://' + s
+        return 'https://duckduckgo.com/?q=' + encodeURIComponent(s)
+      }
 
-      try {
-        const BASE   = new URL('./', document.baseURI).pathname
-        const WISP   = 'wss://anura.pro/wisp/'
-        const PREFIX = BASE + 'scramjet/'
+      try {
+        const BASE   = new URL('./', document.baseURI).pathname
+        const WISP   = 'wss://anura.pro/wisp/'
+        const PREFIX = BASE + 'scramjet/'
 
-        const isFirstLoad = !navigator.serviceWorker.controller
+        const isFirstLoad = !navigator.serviceWorker.controller
 
-        if (isFirstLoad) {
-          status.textContent = 'Preparing…'
-          const regs = await navigator.serviceWorker.getRegistrations()
-          await Promise.all(regs.map(r => r.unregister()))
-          await new Promise(r => {
-            const req = indexedDB.deleteDatabase('$scramjet')
-            req.onsuccess = req.onerror = req.onblocked = r
-          })
-        }
+        if (isFirstLoad) {
+          status.textContent = 'Preparing…'
+          const regs = await navigator.serviceWorker.getRegistrations()
+          await Promise.all(regs.map(r => r.unregister()))
+          await new Promise(r => {
+            const req = indexedDB.deleteDatabase('$scramjet')
+            req.onsuccess = req.onerror = req.onblocked = r
+          })
+        }
 
-        status.textContent = 'Loading engine…'
-        await import('./scramjet-engine/scramjet.js')
+        status.textContent = 'Loading engine…'
+        await import('./scramjet-engine/scramjet.js')
 
-        status.textContent = 'Starting controller…'
-        const { ScramjetController } = $scramjetLoadController()
-        const sj = new ScramjetController({
-          prefix: PREFIX,
-          files: {
-            wasm: BASE + 'scramjet-engine/scramjet.wasm',
-            all:  BASE + 'scramjet-engine/scramjet-all.js',
-            sync: BASE + 'scramjet-engine/scramjet-sync.js',
-          },
-        })
+        status.textContent = 'Starting controller…'
+        const { ScramjetController } = $scramjetLoadController()
+        const sj = new ScramjetController({
+          prefix: PREFIX,
+          files: {
+            wasm: BASE + 'scramjet-engine/scramjet.wasm',
+            all:  BASE + 'scramjet-engine/scramjet-all.js',
+            sync: BASE + 'scramjet-engine/scramjet-sync.js',
+          },
+        })
 
-        if (isFirstLoad) {
-          status.textContent = 'Writing config…'
-          await sj.init()
-          status.textContent = 'Registering service worker…'
-          await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
-          await navigator.serviceWorker.ready
-        } else {
-          status.textContent = 'Registering service worker…'
-          await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
-          await navigator.serviceWorker.ready
-          status.textContent = 'Writing config…'
-          await sj.init()
-        }
+        if (isFirstLoad) {
+          status.textContent = 'Writing config…'
+          await sj.init()
+          status.textContent = 'Registering service worker…'
+          await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
+          await navigator.serviceWorker.ready
+        } else {
+          status.textContent = 'Registering service worker…'
+          await navigator.serviceWorker.register(BASE + 'sw.js', { scope: BASE })
+          await navigator.serviceWorker.ready
+          status.textContent = 'Writing config…'
+          await sj.init()
+        }
 
-        status.textContent = 'Connecting transport…'
-        const conn = new _0zzl94._ak44v7(BASE + 'bare-mux/bare-mux-worker.js')
-        await conn.setTransport(BASE + 'transport/libcurl.mjs', [{ wisp: WISP }])
+        status.textContent = 'Connecting transport…'
+        const conn = new _0zzl94._ak44v7(BASE + 'bare-mux/bare-mux-worker.js')
+        await conn.setTransport(BASE + 'transport/libcurl.mjs', [{ wisp: WISP }])
 
-        history.replaceState({ home: true }, '')
-        status.textContent = 'Ready'
+        history.replaceState({ home: true }, '')
+        status.textContent = 'Ready'
 
-function navigate(raw) {
-  const url = toUrl(raw)
-  if (!url) return
-  
-  const encodedUrl = sj.encodeUrl(url)
-  
-  const finalUrl = `${window.location.origin}/?url=${encodeURIComponent(encodedUrl)}`
-  
-  showBrowser(finalUrl)
-}
+        function navigate(raw) {
+          const url = toUrl(raw)
+          if (!url) return
+          showBrowser(sj.encodeUrl(url))
+        }
 
-        document.getElementById('go-btn').addEventListener('click', () => navigate(bar.value))
-        bar.addEventListener('keydown', e => { if (e.key === 'Enter') navigate(bar.value) })
+        document.getElementById('go-btn').addEventListener('click', () => navigate(bar.value))
+        bar.addEventListener('keydown', e => { if (e.key === 'Enter') navigate(bar.value) })
 
-      } catch (err) {
-        status.style.color = '#f87171'
-        status.textContent = 'Error: ' + err.message
-        console.error('[Scramjet STATIC] init error:', err)
-      }
-    </script>
-  </body>
+      } catch (err) {
+        status.style.color = '#f87171'
+        status.textContent = 'Error: ' + err.message
+        console.error('[Scramjet STATIC] init error:', err)
+      }
+    </script>
+  </body>
 </html>
+
+
