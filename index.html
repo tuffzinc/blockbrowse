@@ -162,7 +162,7 @@ function navigate(raw) {
   
   const encodedUrl = sj.encodeUrl(url)
   
-  const finalUrl = `${window.location.origin}?url=${encodeURIComponent(encodedUrl)}`
+  const finalUrl = `${window.location.origin}/?url=${encodeURIComponent(encodedUrl)}`
   
   showBrowser(finalUrl)
 }
