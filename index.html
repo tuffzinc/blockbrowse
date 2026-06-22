@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scramjet STATIC</title>
+    <title>BlockBrowse</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -156,11 +156,16 @@
         history.replaceState({ home: true }, '')
         status.textContent = 'Ready'
 
-        function navigate(raw) {
-          const url = toUrl(raw)
-          if (!url) return
-          showBrowser(sj.encodeUrl(url))
-        }
+function navigate(raw) {
+  const url = toUrl(raw)
+  if (!url) return
+  
+  const encodedUrl = sj.encodeUrl(url)
+  
+  const finalUrl = `${window.location.origin}/?url=${encodeURIComponent(encodedUrl)}`
+  
+  showBrowser(finalUrl)
+}
 
         document.getElementById('go-btn').addEventListener('click', () => navigate(bar.value))
         bar.addEventListener('keydown', e => { if (e.key === 'Enter') navigate(bar.value) })
